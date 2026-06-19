@@ -15,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     Transform feet;
     Rigidbody rb;
     [SerializeField] LayerMask groundLayer;
+
+    [SerializeField] AudioSource jumpSound;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -29,10 +31,6 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            transform.position = new Vector3(0, 2, 0);
-        }
         if (Input.GetKeyDown(KeyCode.F))
         {
             Instantiate(prefab);
@@ -66,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space) && Physics.CheckSphere(feet.position, 0.2f, groundLayer))
         {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpPower, rb.linearVelocity.z);
+            Jump(true);
         }
 
         mouseX += Input.GetAxis("Mouse X") * Time.deltaTime * sensitivity;
@@ -74,5 +72,26 @@ public class PlayerMovement : MonoBehaviour
         mouseY = Math.Clamp(mouseY, -80, 80);
         
         playerCamera.transform.rotation = Quaternion.Euler(mouseY, mouseX, 0);
+    }
+
+    void Jump(bool jump)
+    {
+        if (jump == true)
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpPower, rb.linearVelocity.z);
+            jumpSound.Play();
+        } else
+        {
+         rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpPower/2, rb.linearVelocity.z);   
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy Head"))
+        {
+            Destroy(collision.transform.parent.gameObject);
+            Jump(false);
+        }
     }
 }
